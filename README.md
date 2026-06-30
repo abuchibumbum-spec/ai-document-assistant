@@ -1,78 +1,76 @@
 # AI Document Assistant
 
-A local Python app for uploading documents or notes, searching them with a hybrid semantic score, asking cited questions, and summarizing matching sections.
+A local, dependency-free document assistant built in pure Python. Upload files or notes, index them automatically, search with a hybrid keyword + semantic scoring approach, ask questions and get cited answers, or generate summaries — all through a built-in web interface, no external services or API keys required.
 
-## What It Can Do
+## Features
 
-- Upload `.pdf`, `.txt`, `.md`, `.csv`, `.json`, `.html`, and `.htm` files
-- Save pasted notes directly from the browser
-- Reindex your document library
-- Search across indexed sections
-- Ask questions and get cited source snippets
-- Summarize the whole library or a focused topic
+- **Multi-format support** — indexes `.txt`, `.md`, `.csv`, `.json`, `.html`, and `.pdf` files (PDF text extraction requires `pypdf` or `PyPDF2`)
+- **Hybrid search** — combines TF-IDF style keyword scoring with shingle-based semantic overlap for more relevant matches
+- **Cited answers** — questions are answered with extracted sentences and source citations pointing back to the originating document and section
+- **Summarization** — generates extractive summaries of indexed content, optionally focused on a query
+- **Notes** — add free-text notes directly, which get indexed alongside uploaded documents
+- **Built-in web UI** — runs a local HTTP server with upload, search, and Q&A, no frontend framework needed
+- **Zero external dependencies** — built entirely with the Python standard library (PDF support is optional and only needs `pypdf`)
 
-## Run The App
+## Getting Started
 
+### Requirements
+- Python 3.10+
+- Optional: `pypdf` for PDF text extraction (`pip install pypdf`)
+
+### Installation
 ```bash
-python doc_assistant.py serve
+git clone https://github.com/abuchibumbum-spec/ai-document-assistant.git
+cd ai-document-assistant
 ```
 
-Then open:
+## Usage
 
-```text
-http://127.0.0.1:8080
+### Run the web app (recommended)
+```bash
+python document_assistant.py serve
+```
+Open `http://127.0.0.1:8080` in your browser to upload files, add notes, search, and ask questions.
+
+### Or use the command line
+
+**Generate sample documents**
+```bash
+python document_assistant.py sample
 ```
 
-## PDF Support
-
-PDF upload is built in. Text extraction from PDFs needs one optional library:
-
+**Index documents** (after adding files to the `documents/` folder)
 ```bash
-python -m pip install pypdf
+python document_assistant.py index
 ```
 
-If `pypdf` or `PyPDF2` is not installed, the app still saves uploaded PDFs and shows a clear warning that text extraction is not available yet.
-
-## Command-Line Use
-
-Create sample documents:
-
+**Ask a question**
 ```bash
-python doc_assistant.py sample
+python document_assistant.py ask "How many vacation days do employees get?"
 ```
 
-Index documents:
-
+**Summarize content**
 ```bash
-python doc_assistant.py index
+python document_assistant.py summarize "expense policy"
 ```
 
-Upload a file:
-
+**Add a note**
 ```bash
-python doc_assistant.py upload path/to/document.pdf
+python document_assistant.py note "Meeting Notes" "Discussed Q3 roadmap and budget."
 ```
 
-Add a note:
-
+**Upload an existing file into the library**
 ```bash
-python doc_assistant.py note "Meeting Notes" "Budget review happens every Friday."
-```
-
-Ask a question:
-
-```bash
-python doc_assistant.py ask "How much is the home office reimbursement?"
-```
-
-Summarize matching sections:
-
-```bash
-python doc_assistant.py summarize "remote work reimbursement"
+python document_assistant.py upload path/to/file.pdf
 ```
 
 ## How It Works
 
-This version runs locally and does not call a paid AI API. It uses a hybrid local ranking method: TF-IDF keyword matching, phrase overlap, and short word-sequence similarity. That gives practical semantic-style retrieval while keeping the project simple to run.
+1. Documents are split into overlapping chunks (~220 words, 55-word overlap) for better retrieval granularity.
+2. Each chunk is scored against a query using a blend of TF-IDF keyword matching and shingle-based phrase overlap.
+3. For questions, the top-matching chunks are broken into sentences, ranked by relevance, and combined into a cited answer.
+4. For summaries, an extractive scoring method picks the most representative sentences from matching content.
 
-A later upgrade can add real embedding models, OCR for scanned PDFs, chat history, and OpenAI-powered answer generation.
+## License
+
+Feel free to use and adapt this project.
